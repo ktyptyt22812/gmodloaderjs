@@ -1,2 +1,2 @@
-# gmodloaderjs
-ыыы
+# garismodloadrhtml
+пс2 подобный лоадер
