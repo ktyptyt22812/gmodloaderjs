@@ -100,7 +100,6 @@ function animate() {
     const spriteSpin = (now * 180 + i * 140) % 360;
 
     drawOrb(currentX, currentY, size3D, alpha, spriteSpin);
-    
   }
 }
 animate();
