@@ -24,6 +24,30 @@ const bgImages = [
   img.src = src;
   return img;
 });
+const bgCanvases = [];
+
+bgImages.forEach((img, index) => {
+  img.onload = () => {
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext("2d");
+
+    tempCtx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = 0;     // Red
+      data[i + 1] = 0; // Green
+      // Blue остаётся
+    }
+
+    tempCtx.putImageData(imageData, 0, 0);
+    bgCanvases[index] = tempCanvas;
+  };
+});
 
 let currentBG = 0;
 let nextBG = 1;
@@ -38,27 +62,26 @@ function drawBackground(time) {
   if (delta >= bgSwapTime) {
     bgTimer = time;
     currentBG = nextBG;
-    nextBG = (nextBG + 1) % bgImages.length;
+    nextBG = (nextBG + 1) % bgCanvases.length;
     bgAlpha = 0;
   }
 
-  // Fade in next image
   if (delta >= (bgSwapTime - bgFadeDuration)) {
     bgAlpha = (delta - (bgSwapTime - bgFadeDuration)) / bgFadeDuration;
     bgAlpha = Math.min(bgAlpha, 1);
   }
 
-  // Draw current
-  ctx.globalAlpha = 1;
-  ctx.drawImage(bgImages[currentBG], 0, 0, canvas.width, canvas.height);
-
-  // Draw next with fade
-  if (bgAlpha > 0) {
-    ctx.globalAlpha = bgAlpha;
-    ctx.drawImage(bgImages[nextBG], 0, 0, canvas.width, canvas.height);
+  if (bgCanvases[currentBG]) {
+    ctx.globalAlpha = 1;
+    ctx.drawImage(bgCanvases[currentBG], 0, 0);
   }
 
-  ctx.globalAlpha = 0.3; // reset
+  if (bgAlpha > 0 && bgCanvases[nextBG]) {
+    ctx.globalAlpha = bgAlpha;
+    ctx.drawImage(bgCanvases[nextBG], 0, 0);
+  }
+
+  ctx.globalAlpha = 1;
 }
 
 function drawOrb(x, y, size, alpha, angle) {
