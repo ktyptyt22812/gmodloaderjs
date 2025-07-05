@@ -58,7 +58,7 @@ function drawBackground(time) {
     ctx.drawImage(bgImages[nextBG], 0, 0, canvas.width, canvas.height);
   }
 
-  ctx.globalAlpha = 1; // reset
+  ctx.globalAlpha = 0.3; // reset
 }
 
 function drawOrb(x, y, size, alpha, angle) {
