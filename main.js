@@ -15,74 +15,6 @@ const orbCount = 7;
 const orbOptions = ["dev", "", "","","","",""];
 const glowImage = new Image();
 glowImage.src = "orb.jpeg";
-const bgImages = [
-  "bg1.jpeg",
-  "bg2.jpeg",
-  "bg3.jpeg"
-].map(src => {
-  const img = new Image();
-  img.src = src;
-  return img;
-});
-const bgCanvases = [];
-
-bgImages.forEach((img, index) => {
-  img.onload = () => {
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext("2d");
-
-    tempCtx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-
-    for (let i = 0; i < data.length; i += 4) {
-      data[i] = 0;     // Red
-      data[i + 1] = 0; // Green
-      // Blue остаётся
-    }
-
-    tempCtx.putImageData(imageData, 0, 0);
-    bgCanvases[index] = tempCanvas;
-  };
-});
-
-let currentBG = 0;
-let nextBG = 1;
-let bgAlpha = 0;
-let bgSwapTime = 20; // секунд до смены
-let bgFadeDuration = 3; // секунд на переход
-let bgTimer = performance.now();
-
-function drawBackground(time) {
-  const delta = (time - bgTimer) / 1000;
-
-  if (delta >= bgSwapTime) {
-    bgTimer = time;
-    currentBG = nextBG;
-    nextBG = (nextBG + 1) % bgCanvases.length;
-    bgAlpha = 0;
-  }
-
-  if (delta >= (bgSwapTime - bgFadeDuration)) {
-    bgAlpha = (delta - (bgSwapTime - bgFadeDuration)) / bgFadeDuration;
-    bgAlpha = Math.min(bgAlpha, 1);
-  }
-
-  if (bgCanvases[currentBG]) {
-    ctx.globalAlpha = 1;
-    ctx.drawImage(bgCanvases[currentBG], 0, 0);
-  }
-
-  if (bgAlpha > 0 && bgCanvases[nextBG]) {
-    ctx.globalAlpha = bgAlpha;
-    ctx.drawImage(bgCanvases[nextBG], 0, 0);
-  }
-
-  ctx.globalAlpha = 1;
-}
 
 function drawOrb(x, y, size, alpha, angle) {
   ctx.save();
@@ -136,8 +68,7 @@ function animate() {
   const elapsed = now - orbitStartTime;
   spinAngle = (spinAngle + 90 * (1 / 60)) % 360;
 
-  drawBackground(performance.now());
-
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2 - 100;
