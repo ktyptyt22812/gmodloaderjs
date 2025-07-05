@@ -15,6 +15,51 @@ const orbCount = 7;
 const orbOptions = ["dev", "", "","","","",""];
 const glowImage = new Image();
 glowImage.src = "orb.jpeg";
+const bgImages = [
+  "bg1.jpg",
+  "bg2.jpg",
+  "bg3.jpg"
+].map(src => {
+  const img = new Image();
+  img.src = src;
+  return img;
+});
+
+let currentBG = 0;
+let nextBG = 1;
+let bgAlpha = 0;
+let bgSwapTime = 20; // секунд до смены
+let bgFadeDuration = 3; // секунд на переход
+let bgTimer = performance.now();
+
+function drawBackground(time) {
+  const delta = (time - bgTimer) / 1000;
+
+  if (delta >= bgSwapTime) {
+    bgTimer = time;
+    currentBG = nextBG;
+    nextBG = (nextBG + 1) % bgImages.length;
+    bgAlpha = 0;
+  }
+
+  // Fade in next image
+  if (delta >= (bgSwapTime - bgFadeDuration)) {
+    bgAlpha = (delta - (bgSwapTime - bgFadeDuration)) / bgFadeDuration;
+    bgAlpha = Math.min(bgAlpha, 1);
+  }
+
+  // Draw current
+  ctx.globalAlpha = 1;
+  ctx.drawImage(bgImages[currentBG], 0, 0, canvas.width, canvas.height);
+
+  // Draw next with fade
+  if (bgAlpha > 0) {
+    ctx.globalAlpha = bgAlpha;
+    ctx.drawImage(bgImages[nextBG], 0, 0, canvas.width, canvas.height);
+  }
+
+  ctx.globalAlpha = 1; // reset
+}
 
 function drawOrb(x, y, size, alpha, angle) {
   ctx.save();
@@ -68,7 +113,8 @@ function animate() {
   const elapsed = now - orbitStartTime;
   spinAngle = (spinAngle + 90 * (1 / 60)) % 360;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground(performance.now());
+
 
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2 - 100;
