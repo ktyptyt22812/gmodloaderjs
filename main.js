@@ -16,9 +16,9 @@ const orbOptions = ["dev", "", "","","","",""];
 const glowImage = new Image();
 glowImage.src = "orb.jpeg";
 const bgImages = [
-  "bg1.jpg",
-  "bg2.jpg",
-  "bg3.jpg"
+  "bg1.jpeg",
+  "bg2.jpeg",
+  "bg3.jpeg"
 ].map(src => {
   const img = new Image();
   img.src = src;
