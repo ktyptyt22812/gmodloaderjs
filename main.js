@@ -46,6 +46,10 @@ function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemo
 
   console.log("GMod connected:", gmodInfo);
 }
+function DownloadingFile(fileName) {
+  currentDownloadingFile = fileName;
+  console.log("Скачивается:", fileName);
+}
 
 function drawCube(x, y, size, depth) {
   const perspective = 0.5 + depth * 0.3;
@@ -83,6 +87,7 @@ function drawText(text, x, y, selected = false) {
   ctx.textAlign = "left";
   ctx.fillText(text, x, y);
 }
+let currentDownloadingFile = "";
 
 function animate() {
   requestAnimationFrame(animate);
@@ -125,8 +130,8 @@ function animate() {
     ctx.fillStyle = "#fff";
     ctx.font = "24px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(`Server: ${gmodInfo.servername}`, canvas.width / 2, canvas.height - 100);
-    ctx.fillText(`Map: ${gmodInfo.mapname} | Gamemode: ${gmodInfo.gamemode}`, canvas.width / 2, canvas.height - 70);
+    ctx.fillText(`${gmodInfo.servername}`, canvas.width / 2, canvas.height - 100);
+    ctx.fillText(`Map: ${gmodInfo.mapname} | Downloading: ${currentDownloadingFile}`, canvas.width / 2, canvas.height - 70);
 
   }
 }
