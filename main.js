@@ -132,7 +132,7 @@ function animate() {
     ctx.textAlign = "center";
     ctx.fillText(`${gmodInfo.servername}`, canvas.width / 2, canvas.height - 100);
     ctx.fillText(`Map: ${gmodInfo.mapname}`, canvas.width / 2, canvas.height - 70);
-    ctx.fillText(`Downloading: ${currentDownloadingFile}`, canvas.width / 2, canvas.height - 40);
+    ctx.fillText(`${currentDownloadingFile}`, canvas.width / 2, canvas.height - 40);
 
   }
 }
