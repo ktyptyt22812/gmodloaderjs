@@ -13,6 +13,7 @@ let gmodInfo = {
   volume: 1,
   language: ""
 };
+let currentDownloadingFile = "";
 
 let spinAngle = 0;
 let baseRadius = 150;
@@ -87,7 +88,6 @@ function drawText(text, x, y, selected = false) {
   ctx.textAlign = "left";
   ctx.fillText(text, x, y);
 }
-let currentDownloadingFile = "";
 
 function animate() {
   requestAnimationFrame(animate);
