@@ -3,6 +3,16 @@ const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+let gmodInfo = {
+  servername: "",
+  serverurl: "",
+  mapname: "",
+  maxplayers: 0,
+  steamid: "",
+  gamemode: "",
+  volume: 1,
+  language: ""
+};
 
 let spinAngle = 0;
 let baseRadius = 150;
@@ -23,6 +33,18 @@ function drawOrb(x, y, size, alpha, angle) {
   ctx.rotate((angle * Math.PI) / 180);
   ctx.drawImage(glowImage, -size / 2, -size / 2, size, size);
   ctx.restore();
+}
+function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
+  gmodInfo.servername = servername;
+  gmodInfo.serverurl = serverurl;
+  gmodInfo.mapname = mapname;
+  gmodInfo.maxplayers = maxplayers;
+  gmodInfo.steamid = steamid;
+  gmodInfo.gamemode = gamemode;
+  gmodInfo.volume = volume;
+  gmodInfo.language = language;
+
+  console.log("GMod connected:", gmodInfo);
 }
 
 function drawCube(x, y, size, depth) {
@@ -100,6 +122,12 @@ function animate() {
     const spriteSpin = (now * 180 + i * 140) % 360;
 
     drawOrb(currentX, currentY, size3D, alpha, spriteSpin);
+    ctx.fillStyle = "#fff";
+    ctx.font = "24px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`Server: ${gmodInfo.servername}`, canvas.width / 2, canvas.height - 100);
+    ctx.fillText(`Map: ${gmodInfo.mapname} | Gamemode: ${gmodInfo.gamemode}`, canvas.width / 2, canvas.height - 70);
+
   }
 }
 animate();
