@@ -25,7 +25,7 @@ let orbStates = [];
 const orbCount = 7;
 const orbOptions = ["dev", "", "","","","",""];
 const glowImage = new Image();
-glowImage.src = "orb.jpeg";
+glowImage.src = "orb.png";
 
 function drawOrb(x, y, size, alpha, angle) {
   ctx.save();
