@@ -51,29 +51,6 @@
 
 		})();
 
-		(function(){ // Preload image list
-		
-			var resource = document.createElement('link'); 
-			resource.setAttribute("rel", "stylesheet");
-			resource.setAttribute("href","main.css");
-			resource.setAttribute("type","text/css");      
-			var head = document.getElementsByTagName('head')[0];
-			head.appendChild(resource);
-			
-			var xobj = new XMLHttpRequest();
-			xobj.overrideMimeType("application/json");
-			xobj.open('GET', "https://g2cf.metastruct.net/lsapi", true);
-			xobj.onreadystatechange = function () {
-				if (xobj.readyState == 4 && xobj.status == "200") {
-					imageslist = JSON.parse(xobj.responseText);
-					console.log("Loaded images");
-					if (typeof OnImagesLoaded !== 'undefined') {
-						OnImagesLoaded(imageslist);
-					}
-				}
-			};
-			xobj.send(null);  
-		})();
 	</script>
 
 	<script defer src="main.js"></script>
