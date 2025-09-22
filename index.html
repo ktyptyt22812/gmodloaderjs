@@ -1,60 +1,442 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GMod Loader</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GMod Loading Screen</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            background: #000;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .log-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            max-height: 300px;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .log-entry {
+            background: rgba(0, 0, 0, 0.8);
+            border-left: 3px solid #00ff00;
+            margin-bottom: 2px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateX(-100%);
+            animation: slideIn 0.5s ease-out forwards;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .log-entry.info {
+            border-left-color: #00aaff;
+            color: #e6f3ff;
+        }
+        
+        .log-entry.success {
+            border-left-color: #00ff88;
+            color: #e6ffe6;
+        }
+        
+        .log-entry.warning {
+            border-left-color: #ffaa00;
+            color: #fff5e6;
+        }
+        
+        .log-entry.error {
+            border-left-color: #ff4444;
+            color: #ffe6e6;
+        }
+        
+        .log-entry.download {
+            border-left-color: #aa88ff;
+            color: #f0e6ff;
+        }
+        
+        .log-entry.server {
+            border-left-color: #ff88aa;
+            color: #ffe6f0;
+        }
+        
+        .log-timestamp {
+            opacity: 0.7;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        
+        .log-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0.8);
+            }
+        }
+        
+        .log-entry.fade-out {
+            animation: fadeOut 0.3s ease-in forwards;
+        }
+        
+        .server-info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .server-info h3 {
+            margin: 0 0 10px 0;
+            color: #00aaff;
+            font-size: 18px;
+        }
+        
+        .server-info p {
+            margin: 5px 0;
+            color: #ffffff;
+            font-size: 14px;
+        }
+        
+        .progress-bar {
+            position: fixed;
+            bottom: 350px;
+            left: 20px;
+            right: 20px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00aaff, #00ff88);
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+    </style>
 </head>
 <body>
-  <canvas id="loaderCanvas"></canvas>
-  <body>
-	<div id="img1"></div>
-	<div id="credits"></div>
-	<div id='splash1'>
-	  <h1 id="splashcenter1">Meta Construct</h1>
-	</div>
-	<div id="topc">
-		<div id="progress" style="display: none;">
-			<div id="progressBG"></div>
-			<div id="progress99">99% </div>
-			<div id="progress90">90% </div>
-			<div id="progress50">50% </div>
-			<div id="progressYOU">You </div>
-			<div id="progresssofar"></div>
-		</div>
-	</div>
-	<div id="console">
-	</div>
-	<script>
-		
-		DOWNLOAD_FILES  = 0
-		STATUS_CHANGED  = 1
-		FILES_NEEDED    = 2
-		FILES_TOTAL     = 3
-		
-		gmod_queue = [];
-		
-		(function() { // Handle gmod API callbacks
-			var q = gmod_queue;
-			function OnGQueue() {
-				if ( window.OnGmodQueue ) {
-					OnGmodQueue(q);
-				}
-			}
-			
-			// GMod api
-			window.DownloadingFile = function (a,b,c) { q.push([DOWNLOAD_FILES	,a,b,c]); OnGQueue(); }; 
-			window.SetStatusChanged= function (a,b,c) { q.push([STATUS_CHANGED	,a,b,c]); OnGQueue(); }; 
-			window.SetFilesNeeded  = function (a,b,c) { q.push([FILES_NEEDED	,a,b,c]); OnGQueue(); };
-			window.SetFilesTotal   = function (a,b,c) { q.push([FILES_TOTAL	 	,a,b,c]); OnGQueue(); };
+    <canvas id="loaderCanvas"></canvas>
+    
+    <div class="server-info">
+        <h3 id="serverName">Connecting...</h3>
+        <p id="mapName">Map: Unknown</p>
+        <p id="gameMode">Gamemode: Unknown</p>
+        <p id="playerCount">Players: 0/0</p>
+    </div>
+    
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+    
+    <div class="log-container" id="logContainer"></div>
 
-		})();
+    <script>
+        const canvas = document.getElementById("loaderCanvas");
+        const ctx = canvas.getContext("2d");
+        const logContainer = document.getElementById("logContainer");
+        const progressFill = document.getElementById("progressFill");
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let gmodInfo = {
+            servername: "GMod Server",
+            serverurl: "",
+            mapname: "gm_construct",
+            maxplayers: 32,
+            steamid: "",
+            gamemode: "Sandbox",
+            volume: 1,
+            language: ""
+        };
+        
+        let currentDownloadingFile = "";
+        let logMessages = [];
+        let filesDownloaded = 0;
+        let totalFiles = 0;
+        let spinAngle = 0;
+        let orbitStartTime = performance.now() / 1000;
+        
 
-	</script>
+        const logIcons = {
+            info: "ℹ️",
+            success: "✅",
+            warning: "⚠️",
+            error: "❌",
+            download: "📥",
+            server: "🖥️",
+            file: "📄",
+            workshop: "🔧",
+            lua: "📜",
+            connect: "🔌"
+        };
+        
 
-	<script defer src="main.js"></script>
+        function addLog(message, type = 'info', icon = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            
+            const actualIcon = icon || logIcons[type] || logIcons.info;
+            
+            logEntry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span class="log-icon">${actualIcon}</span>
+                <span class="log-message">${message}</span>
+            `;
+            
+            logContainer.appendChild(logEntry);
+            
+            // Удаляем старые логи если их слишком много
+            const allLogs = logContainer.children;
+            if (allLogs.length > 15) {
+                const oldLog = allLogs[0];
+                oldLog.classList.add('fade-out');
+                setTimeout(() => {
+                    if (oldLog.parentNode) {
+                        oldLog.remove();
+                    }
+                }, 300);
+            }
+            
+            // Автоскролл
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+        
+        // Функция обновления прогресса
+        function updateProgress() {
+            if (totalFiles > 0) {
+                const progress = (filesDownloaded / totalFiles) * 100;
+                progressFill.style.width = `${Math.min(progress, 100)}%`;
+            }
+        }
+        
 
+        function updateServerInfo() {
+            document.getElementById('serverName').textContent = gmodInfo.servername || 'Unknown Server';
+            document.getElementById('mapName').textContent = `Map: ${gmodInfo.mapname || 'Unknown'}`;
+            document.getElementById('gameMode').textContent = `Gamemode: ${gmodInfo.gamemode || 'Unknown'}`;
+            document.getElementById('playerCount').textContent = `Players: 0/${gmodInfo.maxplayers || 0}`;
+        }
+        
+
+        function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
+            gmodInfo.servername = servername;
+            gmodInfo.serverurl = serverurl;
+            gmodInfo.mapname = mapname;
+            gmodInfo.maxplayers = maxplayers;
+            gmodInfo.steamid = steamid;
+            gmodInfo.gamemode = gamemode;
+            gmodInfo.volume = volume;
+            gmodInfo.language = language;
+            
+            updateServerInfo();
+            addLog(`Connected to ${servername}`, 'connect');
+            addLog(`Loading map: ${mapname}`, 'info');
+            addLog(`Gamemode: ${gamemode}`, 'info');
+        }
+        
+        function DownloadingFile(fileName) {
+            currentDownloadingFile = fileName;
+            filesDownloaded++;
+            updateProgress();
+            
+            // Определяем тип файла для соответствующей иконки
+            const ext = fileName.split('.').pop().toLowerCase();
+            let fileType = 'file';
+            let message = `Downloading: ${fileName}`;
+            
+            if (['lua', 'txt'].includes(ext)) {
+                fileType = 'lua';
+                message = `Loading script: ${fileName}`;
+            } else if (['mdl', 'vtf', 'vmt', 'vtx', 'vvd', 'phy'].includes(ext)) {
+                fileType = 'download';
+                message = `Loading asset: ${fileName}`;
+            } else if (['wav', 'mp3', 'ogg'].includes(ext)) {
+                fileType = 'download';
+                message = `Loading sound: ${fileName}`;
+            }
+            
+            addLog(message, 'download');
+        }
+        
+        function SetFilesTotal(total) {
+            totalFiles = total;
+            addLog(`Total files to download: ${total}`, 'info');
+            updateProgress();
+        }
+        
+        function SetFilesNeeded(needed) {
+            addLog(`Files needed: ${needed}`, 'info');
+        }
+        
+        function SetStatusChanged(status) {
+            // Фильтруем некоторые статусы
+            if (status === "Retrieving Workshop file details..." || 
+                status === "Deleting Leftovers" ||
+                status === "Mounting Addons" ||
+                status === "Workshop Complete" ||
+                status === "Sending client info..." ||
+                status === "Client info sent!" ||
+                status === "Received all Lua files we needed!") {
+                return;
+            }
+            
+            // Парсим специальные статусы
+            const luaMatch = status.match(/Downloaded (\d+) of (\d+) Lua files/);
+            if (luaMatch) {
+                addLog(`Lua files: ${luaMatch[1]}/${luaMatch[2]}`, 'lua');
+                return;
+            }
+            
+            const workshopMatch = status.match(/Loading '(.*)'$/);
+            if (workshopMatch) {
+                addLog(`Workshop: ${workshopMatch[1]}`, 'workshop', '🔧');
+                return;
+            }
+            
+            // Общий статус
+            addLog(status, 'info');
+        }
+        
+        // Функция для симуляции загрузки (для тестирования)
+        function simulateLoading() {
+
+            setTimeout(() => {
+                GameDetails("Awesome GMod Server", "192.168.1.100:27015", "rp_downtown_v4c_v2", 64, "STEAM_0:1:12345", "DarkRP", 1, "ru");
+            }, 1000);
+            
+
+            setTimeout(() => {
+                SetFilesTotal(150);
+                const files = [
+                    "materials/models/player.vtf",
+                    "sound/ambient/music.wav",
+                    "models/props/car.mdl",
+                    "lua/autorun/client/hud.lua",
+                    "materials/gui/background.vmt",
+                    "sound/weapons/reload.wav",
+                    "models/weapons/pistol.vtx"
+                ];
+                
+                files.forEach((file, index) => {
+                    setTimeout(() => {
+                        DownloadingFile(file);
+                    }, (index + 1) * 800);
+                });
+                
+
+                setTimeout(() => SetStatusChanged("Mounting content..."), 2000);
+                setTimeout(() => SetStatusChanged("Loading Workshop addon 'Advanced Dupes'"), 3000);
+                setTimeout(() => SetStatusChanged("Downloaded 45 of 67 Lua files"), 4000);
+                setTimeout(() => addLog("Connection established!", 'success'), 6000);
+            }, 2000);
+        }
+        
+
+        function drawBackground() {
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#0a0a0a');
+            gradient.addColorStop(0.5, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const now = performance.now() / 1000;
+            spinAngle = (spinAngle + 30 * (1/60)) % 360;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            
+            // Рисуем орбы (упрощенная версия)
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 100;
+            
+            for (let i = 0; i < 6; i++) {
+                const angle = (spinAngle + i * 60) * Math.PI / 180;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius * 0.5;
+                
+                ctx.save();
+                ctx.globalAlpha = 0.8;
+                ctx.fillStyle = `hsl(${(i * 60 + spinAngle) % 360}, 70%, 60%)`;
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Внутреннее свечение
+                ctx.globalAlpha = 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, 30, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+
+        animate();
+        // simulateLoading(); 
+
+        window.GameDetails = GameDetails;
+        window.DownloadingFile = DownloadingFile;
+        window.SetFilesTotal = SetFilesTotal;
+        window.SetFilesNeeded = SetFilesNeeded;
+        window.SetStatusChanged = SetStatusChanged;
+    </script>
 </body>
-
 </html>

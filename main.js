@@ -14,6 +14,272 @@ let gmodInfo = {
   language: ""
 };
 let currentDownloadingFile = "";
+var INFO = Color(45, 255, 99);
+
+iDownloading = false;
+iFileCount = false;
+files_downloaded = 0;
+
+var remaining_elem;
+var remaining_logline;
+
+var mdl_cull = ['.vtx', ".dx80.vtx", ".dx90.vtx", '.mdl', '.sw.vtx', '.phy', '.vvd'];
+var ext_iconmap = {
+	"vmt": "photo_link",
+	"vtf": "picture_link",
+	"png": "picture_link",
+	"jpg": "picture_link",
+	"wav": "sound",
+	"mp3": "sound",
+	"ogg": "sound",
+	"mdl": "brick_link",
+};
+
+function getExtension(path) {
+	var basename = path.split(/[\\/]/).pop(), // extract file name from full path ...
+		// (supports `\\` and `/` separators)
+		pos = basename.lastIndexOf("."); // get last position of `.`
+
+	if (basename === "" || pos < 1) // if file name is empty or ...
+		return ""; //  `.` not found (-1) or comes first (0)
+
+	return basename.slice(pos + 1); // extract extension ignoring `.`
+}
+var prev_dl;
+var lastdllog_num;
+var lastdllog;
+
+function UpdateDownloading(a) {
+
+	var remaining = iDownloading - files_downloaded;
+
+	if (remaining < -2) {
+		if (remaining_elem) {
+			remaining_elem.remove();
+		} else {
+			return;
+		}
+	}
+
+	if (!remaining_logline) {
+		remaining_logline = LogNoRemove(INFO, "Files remaining ", WHITE, remaining);
+		remaining_elem = remaining_logline.children().last();
+	};
+
+	remaining_elem.text(remaining > 0 && remaining || 0);
+	var ext = getExtension(a);
+	var str = a.replace(/\//g, " ").replace(/_/g, " ");
+
+	for (var i = mdl_cull.length; i--;) {
+		var suffix = mdl_cull[i];
+		if (str.endsWith(suffix)) {
+
+			str = str.substring(0, str.length - suffix.length);
+			ext = "mdl";
+			break;
+		};
+	};
+
+	if (str == "") {
+		console.log("WTF? " + a);
+	}
+	if (prev_dl == str) {
+		if (lastdllog) {
+			if (lastdllog_num) {
+				lastdllog_num += 1;
+				lastdllog.children().last().text(" (" + lastdllog_num + ")");
+			} else {
+				lastdllog_num = 2;
+				lastdllog.append($("<span>").text(" (2)"));
+			}
+		};
+		return;
+	}
+	prev_dl = str;
+	lastdllog_num = false;
+	lastdllog = Log(Icon16(ext_iconmap[ext] || "world_go"), " ", str);
+};
+
+
+function OnExtraInfo(data, textStatus, request, same_instance) {
+	if (!same_instance) {
+		OnServerCrashed();
+	};
+	OnStats(data.stats);
+}
+
+var remaininglua_logline;
+var remaininglua_elem;
+
+function OnStatus(a) {
+
+	if (a == "Retrieving Workshop file details...") {
+		return;
+	};
+
+	if (a == "Deleting Leftovers") {
+		return;
+	};
+	if (a == "Mounting Addons") {
+		return;
+	};
+	if (a == "Workshop Complete") {
+		return;
+	};
+	if (a == "Sending client info...") {
+		return;
+	};
+
+	if (a == "Client info sent!") {
+		return;
+	};
+
+	if (a == "Received all Lua files we needed!") {
+		return;
+	};
+
+	if (a.indexOf("lua files from the server") > 0) {
+		return;
+	};
+
+	var m = a.match(/Downloaded (\d{1,4}) of (\d{1,4}) Lua files/);
+	if (m && m[2]) {
+
+		if (!remaininglua_logline) {
+			remaininglua_logline = LogNoRemove(Icon16("script_link"), INFO, "Downloading Lua ", WHITE, m[1], "/", m[2]);
+			remaininglua_elem = remaininglua_logline.children().last().prev().prev();
+		};
+
+		remaininglua_elem.text(m[1]);
+
+		return;
+	};
+
+	var m = a.match(/Loading '(.*)'$/);
+	if (m && m[1]) {
+
+		Log(Icon16("plugin"), INFO, "Workshop: ", WHITE, m[1]);
+
+		return;
+	};
+
+	Log(a);
+};
+
+function DoGmodQueue(entry) {
+	var a = entry[1];
+	var b = entry[2];
+	var c = entry[3];
+
+	switch (entry[0]) {
+		case DOWNLOAD_FILES:
+			files_downloaded++;
+			UpdateDownloading(a);
+			break;
+		case STATUS_CHANGED:
+			OnStatus(a);
+			break;
+		case FILES_NEEDED:
+			if (a != iDownloading) {
+				Log(INFO, "Files needed ", WHITE, a, b, c);
+			}
+			iDownloading = a;
+			break;
+		case FILES_TOTAL:
+			if (a != iFileCount) {
+				Log(INFO, "Files total ", WHITE, a, b, c);
+			}
+			iFileCount = a;
+			break;
+		default:
+			LogD("???", a, b, c);
+	}
+
+}
+
+function OnGmodQueue() {
+	while (gmod_queue.length > 0) {
+		var entry = gmod_queue.pop();
+		DoGmodQueue(entry);
+	};
+};
+
+
+function OnImagesLoaded(res) {
+	if (!res) return;
+	var imageslist = res['result'];
+	if (!imageslist) return;
+
+	var t = [];
+	for (key in imageslist) {
+		var dat = imageslist[key];
+		var approved = dat['approval'];
+		if (!approved) {
+			continue;
+		}
+		var creator = dat['comment'] || dat['name'];
+		var url = dat['url'];
+		t.push([url, creator || ""]);
+	}
+	shuffle(t);
+	//LogD("OnImagesLoaded " + t.length);
+
+	if (t.length == 0) {
+		return;
+	};
+
+	var img1 = document.getElementById("img1");
+	var img2 = document.getElementById("img2");
+
+	var imgn = 0;
+
+	function ImageLoadLoop() {
+		var rndimage = t[imgn];
+		if (!rndimage) {
+			imgn = 0;
+			rndimage = t[0];
+		}
+		var first = imgn == 0;
+		imgn = imgn + 1;
+
+		var src = rndimage[0];
+		src=src.replace("images.akamai.steamusercontent.com","steamuserimages-a.akamaihd.net")
+		if (src.indexOf("://")==-1) {
+			src = "https://"+src;
+		}
+		var credits = document.getElementById("credits");
+		var img = new Image();
+		img.onerror = function () {
+			setTimeout(ImageLoadLoop, 8000);
+		};
+		img.onload = function () {
+			var target = img1;
+			if (first) {
+				$(target).hide();
+				$(target).fadeIn(2000, function (data) {
+					HideLogo();
+				});
+				target.style.backgroundRepeat = 'no-repeat';
+				target.style.backgroundPosition = 'center';
+				target.style.backgroundSize = 'cover';
+			};
+
+			target.style.backgroundImage = "url('" + this.src + "')";
+
+			setTimeout(ImageLoadLoop, first && 10000 || 8000);
+
+			credits.textContent = rndimage[1] || "";
+		}
+		img.src = src;
+
+	}
+	ImageLoadLoop();
+
+}
+
+function OnServerCrashed() {
+	Log("Server", Color(255, 22, 20), " CRASHED", Color(255, 2222, 255), ", reconnect manually!");
+}
 
 let spinAngle = 0;
 let baseRadius = 150;
