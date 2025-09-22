@@ -21,11 +21,38 @@ let flyDuration = 1.2;
 let delayBetween = 0.15;
 let orbitStartTime = performance.now() / 1000;
 let orbStates = [];
+let logMessages = [];
+function DownloadingFile(fileName) {
+  currentDownloadingFile = fileName;
+  addLog("Downloading " + fileName);
+}
+
+function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
+  gmodInfo.servername = servername;
+  gmodInfo.mapname = mapname;
+  addLog("Connected to " + servername);
+  addLog("Map: " + mapname);
+}
 
 const orbCount = 7;
 const orbOptions = ["dev", "", "","","","",""];
 const glowImage = new Image();
 glowImage.src = "orb.png";
+function addLog(message) {
+  if (logMessages.length > 15) {
+    logMessages.shift(); 
+  }
+  logMessages.push(message);
+  console.log("[LOG]", message);
+}
+function drawLog(x, y) {
+  ctx.font = "18px monospace";
+  ctx.textAlign = "left";
+  for (let i = 0; i < logMessages.length; i++) {
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.fillText("> " + logMessages[i], x, y + i * 20);
+  }
+}
 
 function drawOrb(x, y, size, alpha, angle) {
   ctx.save();
@@ -125,6 +152,7 @@ function animate() {
     const size3D = size * (1 + depth * 0.3);
     const alpha = 255;
     const spriteSpin = (now * 180 + i * 140) % 360;
+  drawLog(30, canvas.height - 200);
 
     drawOrb(currentX, currentY, size3D, alpha, spriteSpin);
     ctx.fillStyle = "#fff";
