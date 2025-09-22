@@ -29,12 +29,12 @@
         }
         
         .log-entry {
-            background: rgba(0, 0, 0, 0.8);
-            border-left: 3px solid #00ff00;
+            background: rgba(60, 60, 60, 0.9);
+            border-left: 3px solid #a0a0a0;
             margin-bottom: 2px;
             padding: 8px 12px;
             border-radius: 4px;
-            color: #ffffff;
+            color: #f0f0f0;
             font-size: 14px;
             opacity: 0;
             transform: translateX(-100%);
@@ -44,33 +44,33 @@
         }
         
         .log-entry.info {
-            border-left-color: #00aaff;
-            color: #e6f3ff;
+            border-left-color: #9ca3af;
+            color: #f3f4f6;
         }
         
         .log-entry.success {
-            border-left-color: #00ff88;
-            color: #e6ffe6;
+            border-left-color: #d1d5db;
+            color: #f9fafb;
         }
         
         .log-entry.warning {
-            border-left-color: #ffaa00;
-            color: #fff5e6;
+            border-left-color: #9ca3af;
+            color: #f3f4f6;
         }
         
         .log-entry.error {
-            border-left-color: #ff4444;
-            color: #ffe6e6;
+            border-left-color: #6b7280;
+            color: #e5e7eb;
         }
         
         .log-entry.download {
-            border-left-color: #aa88ff;
-            color: #f0e6ff;
+            border-left-color: #94a3b8;
+            color: #f1f5f9;
         }
         
         .log-entry.server {
-            border-left-color: #ff88aa;
-            color: #ffe6f0;
+            border-left-color: #a1a1aa;
+            color: #f4f4f5;
         }
         
         .log-timestamp {
@@ -117,22 +117,22 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(55, 55, 55, 0.9);
             padding: 15px;
             border-radius: 8px;
             backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(160, 160, 160, 0.2);
         }
         
         .server-info h3 {
             margin: 0 0 10px 0;
-            color: #00aaff;
+            color: #d1d5db;
             font-size: 18px;
         }
         
         .server-info p {
             margin: 5px 0;
-            color: #ffffff;
+            color: #f3f4f6;
             font-size: 14px;
         }
         
@@ -142,14 +142,14 @@
             left: 20px;
             right: 20px;
             height: 6px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(100, 100, 100, 0.3);
             border-radius: 3px;
             overflow: hidden;
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00aaff, #00ff88);
+            background: linear-gradient(90deg, #9ca3af, #d1d5db);
             width: 0%;
             border-radius: 3px;
             transition: width 0.3s ease;
@@ -199,7 +199,6 @@
         let spinAngle = 0;
         let orbitStartTime = performance.now() / 1000;
         
-
         const logIcons = {
             info: "ℹ️",
             success: "✅",
@@ -212,7 +211,6 @@
             lua: "📜",
             connect: "🔌"
         };
-        
 
         function addLog(message, type = 'info', icon = null) {
             const timestamp = new Date().toLocaleTimeString();
@@ -229,7 +227,6 @@
             
             logContainer.appendChild(logEntry);
             
-            // Удаляем старые логи если их слишком много
             const allLogs = logContainer.children;
             if (allLogs.length > 15) {
                 const oldLog = allLogs[0];
@@ -246,8 +243,7 @@
             
             console.log(`[${type.toUpperCase()}]`, message);
         }
-        
-        // Функция обновления прогресса
+
         function updateProgress() {
             if (totalFiles > 0) {
                 const progress = (filesDownloaded / totalFiles) * 100;
@@ -262,7 +258,6 @@
             document.getElementById('gameMode').textContent = `Gamemode: ${gmodInfo.gamemode || 'Unknown'}`;
             document.getElementById('playerCount').textContent = `Players: 0/${gmodInfo.maxplayers || 0}`;
         }
-        
 
         function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
             gmodInfo.servername = servername;
@@ -284,8 +279,7 @@
             currentDownloadingFile = fileName;
             filesDownloaded++;
             updateProgress();
-            
-            // Определяем тип файла для соответствующей иконки
+
             const ext = fileName.split('.').pop().toLowerCase();
             let fileType = 'file';
             let message = `Downloading: ${fileName}`;
@@ -315,7 +309,7 @@
         }
         
         function SetStatusChanged(status) {
-            // Фильтруем некоторые статусы
+
             if (status === "Retrieving Workshop file details..." || 
                 status === "Deleting Leftovers" ||
                 status === "Mounting Addons" ||
@@ -326,7 +320,7 @@
                 return;
             }
             
-            // Парсим специальные статусы
+
             const luaMatch = status.match(/Downloaded (\d+) of (\d+) Lua files/);
             if (luaMatch) {
                 addLog(`Lua files: ${luaMatch[1]}/${luaMatch[2]}`, 'lua');
@@ -338,18 +332,15 @@
                 addLog(`Workshop: ${workshopMatch[1]}`, 'workshop', '🔧');
                 return;
             }
-            
-            // Общий статус
+
             addLog(status, 'info');
         }
-        
-        // Функция для симуляции загрузки (для тестирования)
+
         function simulateLoading() {
 
             setTimeout(() => {
                 GameDetails("Awesome GMod Server", "192.168.1.100:27015", "rp_downtown_v4c_v2", 64, "STEAM_0:1:12345", "DarkRP", 1, "ru");
             }, 1000);
-            
 
             setTimeout(() => {
                 SetFilesTotal(150);
@@ -380,14 +371,13 @@
 
         function drawBackground() {
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, '#0a0a0a');
-            gradient.addColorStop(0.5, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
+            gradient.addColorStop(0, '#2a2a2a');
+            gradient.addColorStop(0.5, '#3a3a3a');
+            gradient.addColorStop(1, '#4a4a4a');
             
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
-        
 
         function animate() {
             requestAnimationFrame(animate);
@@ -397,7 +387,6 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground();
             
-            // Рисуем орбы (упрощенная версия)
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
             const radius = 100;
@@ -409,12 +398,12 @@
                 
                 ctx.save();
                 ctx.globalAlpha = 0.8;
-                ctx.fillStyle = `hsl($ffffff}, 0%, 100%)`;
+                ctx.fillStyle = "#a1a1aa"; 
                 ctx.beginPath();
                 ctx.arc(x, y, 20, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Внутреннее свечение
+
                 ctx.globalAlpha = 0.3;
                 ctx.beginPath();
                 ctx.arc(x, y, 30, 0, Math.PI * 2);
@@ -422,15 +411,16 @@
                 ctx.restore();
             }
         }
+        
 
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
-        
 
         animate();
-        // simulateLoading(); 
+        // simulateLoading(); // Закомментировано для реального использования
+        
 
         window.GameDetails = GameDetails;
         window.DownloadingFile = DownloadingFile;
