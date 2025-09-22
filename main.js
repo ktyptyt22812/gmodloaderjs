@@ -52,7 +52,7 @@ function drawBackground(now) {
 
   // плавный переход к следующей
   if (t > 0.7) {
-    ctx.globalAlpha = (t - 0.7) / 0.3; // fade-in
+
     ctx.drawImage(loadedImages[nextBg], 0, 0, canvas.width, canvas.height);
   }
   ctx.fillStyle = "rgba(0,0,0,0.4)"; // 0.4 = 40% прозрачности
