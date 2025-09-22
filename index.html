@@ -8,6 +8,76 @@
 </head>
 <body>
   <canvas id="loaderCanvas"></canvas>
-  <script src="main.js"></script>
+  <body>
+	<div id="img1"></div>
+	<div id="credits"></div>
+	<div id='splash1'>
+	  <h1 id="splashcenter1">Meta Construct</h1>
+	</div>
+	<div id="topc">
+		<div id="progress" style="display: none;">
+			<div id="progressBG"></div>
+			<div id="progress99">99% </div>
+			<div id="progress90">90% </div>
+			<div id="progress50">50% </div>
+			<div id="progressYOU">You </div>
+			<div id="progresssofar"></div>
+		</div>
+	</div>
+	<div id="console">
+	</div>
+	<script>
+		
+		DOWNLOAD_FILES  = 0
+		STATUS_CHANGED  = 1
+		FILES_NEEDED    = 2
+		FILES_TOTAL     = 3
+		
+		gmod_queue = [];
+		
+		(function() { // Handle gmod API callbacks
+			var q = gmod_queue;
+			function OnGQueue() {
+				if ( window.OnGmodQueue ) {
+					OnGmodQueue(q);
+				}
+			}
+			
+			// GMod api
+			window.DownloadingFile = function (a,b,c) { q.push([DOWNLOAD_FILES	,a,b,c]); OnGQueue(); }; 
+			window.SetStatusChanged= function (a,b,c) { q.push([STATUS_CHANGED	,a,b,c]); OnGQueue(); }; 
+			window.SetFilesNeeded  = function (a,b,c) { q.push([FILES_NEEDED	,a,b,c]); OnGQueue(); };
+			window.SetFilesTotal   = function (a,b,c) { q.push([FILES_TOTAL	 	,a,b,c]); OnGQueue(); };
+
+		})();
+
+		(function(){ // Preload image list
+		
+			var resource = document.createElement('link'); 
+			resource.setAttribute("rel", "stylesheet");
+			resource.setAttribute("href","main.css");
+			resource.setAttribute("type","text/css");      
+			var head = document.getElementsByTagName('head')[0];
+			head.appendChild(resource);
+			
+			var xobj = new XMLHttpRequest();
+			xobj.overrideMimeType("application/json");
+			xobj.open('GET', "https://g2cf.metastruct.net/lsapi", true);
+			xobj.onreadystatechange = function () {
+				if (xobj.readyState == 4 && xobj.status == "200") {
+					imageslist = JSON.parse(xobj.responseText);
+					console.log("Loaded images");
+					if (typeof OnImagesLoaded !== 'undefined') {
+						OnImagesLoaded(imageslist);
+					}
+				}
+			};
+			xobj.send(null);  
+		})();
+	</script>
+
+	<script defer src="main.js"></script>
+
 </body>
+
 </html>
