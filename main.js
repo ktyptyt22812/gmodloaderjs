@@ -56,7 +56,7 @@ function drawBackground(now) {
     ctx.drawImage(loadedImages[nextBg], 0, 0, canvas.width, canvas.height);
   }
 
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = 0.4;
 }
 
 function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
