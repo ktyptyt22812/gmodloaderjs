@@ -55,8 +55,8 @@ function drawBackground(now) {
     ctx.globalAlpha = (t - 0.7) / 0.3; // fade-in
     ctx.drawImage(loadedImages[nextBg], 0, 0, canvas.width, canvas.height);
   }
-
-  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = "rgba(0,0,0,0.4)"; // 0.4 = 40% прозрачности
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
