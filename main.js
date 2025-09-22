@@ -26,6 +26,38 @@ function DownloadingFile(fileName) {
   currentDownloadingFile = fileName;
   addLog("Downloading " + fileName);
 }
+const bgImages = ["bg1.jpeg", "bg2.jpeg", "bg3.jpeg"];
+let loadedImages = [];
+let currentBg = 0;
+let lastBgSwitch = performance.now();
+const bgSwitchInterval = 8000; // каждые 8 сек
+for (let src of bgImages) {
+  let img = new Image();
+  img.src = src;
+  loadedImages.push(img);
+}
+function drawBackground(now) {
+  let nextBg = (currentBg + 1) % loadedImages.length;
+  let t = (now - lastBgSwitch) / bgSwitchInterval;
+
+  if (t >= 1) {
+    currentBg = nextBg;
+    lastBgSwitch = now;
+    t = 0;
+  }
+
+  // текущая картинка
+  ctx.globalAlpha = 1;
+  ctx.drawImage(loadedImages[currentBg], 0, 0, canvas.width, canvas.height);
+
+  // плавный переход к следующей
+  if (t > 0.7) {
+    ctx.globalAlpha = (t - 0.7) / 0.3; // fade-in
+    ctx.drawImage(loadedImages[nextBg], 0, 0, canvas.width, canvas.height);
+  }
+
+  ctx.globalAlpha = 1;
+}
 
 function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
   gmodInfo.servername = servername;
@@ -127,6 +159,7 @@ function animate() {
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2 - 100;
   const size = 64;
+  drawBackground(performance.now());
 
   for (let i = 0; i < orbCount; i++) {
     orbStates[i] = orbStates[i] || { progress: 0 };
