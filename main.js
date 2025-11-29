@@ -433,32 +433,27 @@ function animate() {
     const delay = i * delayBetween;
     const startTime = orbitStartTime + delay;
 
-    // PS2-стиль: орбы двигаются в сферическом паттерне
-    // Используем 3D вращение для создания эффекта сферы
     const timeOffset = orbPhases[i];
     const orbitSpeed = 0.8;
-    
-    // Вертикальное вращение (latitude)
+
     const vertAngle = Math.sin(now * orbitSpeed + timeOffset) * Math.PI * 0.6;
     
-    // Горизонтальное вращение (longitude)
     const horizAngle = (now * orbitSpeed * 1.5 + timeOffset + i * (Math.PI * 2 / orbCount)) % (Math.PI * 2);
     
-    // Динамический радиус сферы (в PS2 сфера расширяется с течением часа)
     const sphereExpansion = 1 + Math.sin(now * 0.3) * 0.3;
     const sphereRadius = baseRadius * sphereExpansion;
     
-    // 3D координаты на сфере
+
     const x3d = Math.cos(horizAngle) * Math.cos(vertAngle);
     const y3d = Math.sin(vertAngle);
     const z3d = Math.sin(horizAngle) * Math.cos(vertAngle);
     
     const targetX = centerX + x3d * sphereRadius;
-    const targetY = centerY + y3d * sphereRadius * 0.6; // сжатие по Y для перспективы
+    const targetY = centerY + y3d * sphereRadius * 0.6;
     
     if (now >= startTime) {
       const progress = Math.min((now - startTime) / flyDuration, 1);
-      // Плавный easing
+
       orbStates[i].progress = progress < 0.5 
         ? 2 * progress * progress 
         : 1 - Math.pow(-2 * progress + 2, 2) / 2;
@@ -468,11 +463,9 @@ function animate() {
     const currentX = centerX - 1000 + (targetX - (centerX - 1000)) * progress;
     const currentY = centerY - 400 + (targetY - (centerY - 400)) * progress;
 
-    // Размер зависит от глубины (z)
     const depthScale = 0.7 + z3d * 0.3;
     const size3D = size * depthScale;
     
-    // Прозрачность зависит от глубины и пульсации
     const pulse = 0.85 + Math.sin(now * 2 + timeOffset) * 0.15;
     const depthAlpha = 0.5 + z3d * 0.5; // орбы на переднем плане ярче
     const alpha = pulse * depthAlpha * progress;
