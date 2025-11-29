@@ -428,19 +428,27 @@ function animate() {
   drawBackground(performance.now());
 
   for (let i = 0; i < orbCount; i++) {
-    orbStates[i] = orbStates[i] || { progress: 0 };
+    orbStates[i] = orbStates[i] || { progress: 0, floatOffset: Math.random() * Math.PI * 2 };
     const delay = i * delayBetween;
     const startTime = orbitStartTime + delay;
 
-    const angle = (spinAngle + i * 45) * (Math.PI / 180); // должно работать
+    const angle = (spinAngle + i * 45) * (Math.PI / 180);
 
-    const targetX = centerX + Math.cos(angle) * baseRadius;
+    // Добавляем плавающее движение и пульсацию
+    const floatSpeed = 1.5 + i * 0.2;
+    const floatY = Math.sin(now * floatSpeed + orbStates[i].floatOffset) * 20;
+    const floatX = Math.cos(now * floatSpeed * 0.7 + orbStates[i].floatOffset) * 15;
+    
+    const targetX = centerX + Math.cos(angle) * baseRadius + floatX;
     const ellipseY = baseRadius * 0.5 + Math.sin(now * 2) * 90;
-    const targetY = centerY + Math.sin(angle) * ellipseY;
+    const targetY = centerY + Math.sin(angle) * ellipseY + floatY;
 
     if (now >= startTime) {
       const progress = Math.min((now - startTime) / flyDuration, 1);
-      orbStates[i].progress = progress;
+      // Easing для более плавного появления
+      orbStates[i].progress = progress < 0.5 
+        ? 2 * progress * progress 
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
     }
 
     const progress = orbStates[i].progress;
@@ -448,8 +456,12 @@ function animate() {
     const currentY = centerY - 400 + (targetY - (centerY - 400)) * progress;
 
     const depth = Math.sin(angle);
-    const size3D = size * (1 + depth * 0.3);
-    const alpha = 255;
+    // Пульсация размера
+    const pulse = 1 + Math.sin(now * 3 + i * 0.5) * 0.15;
+    const size3D = size * (1 + depth * 0.3) * pulse;
+    // Пульсация прозрачности
+    const alphaPulse = 0.8 + Math.sin(now * 2 + i * 0.7) * 0.2;
+    const alpha = alphaPulse * progress;
     const spriteSpin = (now * 180 + i * 140) % 360;
   drawLog(30, canvas.height - 200);
 
@@ -464,3 +476,4 @@ function animate() {
   }
 }
 animate();
+
