@@ -427,47 +427,47 @@ function animate() {
   const size = 64;
   drawBackground(performance.now());
 
-for (let i = 0; i < orbCount; i++) {
-    orbStates[i] = orbStates[i] || { progress: 0 };
-    const delay = i * delayBetween;
-    const startTime = orbitStartTime + delay;
+	for (let i = 0; i < orbCount; i++) {
+		orbStates[i] = orbStates[i] || { progress: 0 };
+		const delay = i * delayBetween;
+		const startTime = orbitStartTime + delay;
 
-    const timeOffset = orbPhases[i];
-    const orbitSpeed = 0.8;
-    
-    const vertAngle = Math.sin(now * orbitSpeed + timeOffset) * Math.PI * 0.6;
-    
-    const horizAngle = (now * orbitSpeed * 1.5 + timeOffset + i * (Math.PI * 2 / orbCount)) % (Math.PI * 2);
-    
-    const sphereExpansion = 1 + Math.sin(now * 0.3) * 0.3;
-    const sphereRadius = baseRadius * sphereExpansion;
-    
+		const timeOffset = orbPhases[i];
+		const orbitSpeed = 0.8;
+		
+		const vertAngle = Math.sin(now * orbitSpeed + timeOffset) * Math.PI * 0.6;
+		
+		const horizAngle = (now * orbitSpeed * 1.5 + timeOffset + i * (Math.PI * 2 / orbCount)) % (Math.PI * 2);
+		
+		const sphereExpansion = 1 + Math.sin(now * 0.3) * 0.3;
+		const sphereRadius = baseRadius * sphereExpansion;
+		
 
-    const x3d = Math.cos(horizAngle) * Math.cos(vertAngle);
-    const y3d = Math.sin(vertAngle);
-    const z3d = Math.sin(horizAngle) * Math.cos(vertAngle);
-    
-    const targetX = centerX + x3d * sphereRadius;
-    const targetY = centerY + y3d * sphereRadius * 0.6; 
-    
-    if (now >= startTime) {
-      const progress = Math.min((now - startTime) / flyDuration, 1);
-      orbStates[i].progress = progress < 0.5 
-        ? 2 * progress * progress 
-        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-    }
+		const x3d = Math.cos(horizAngle) * Math.cos(vertAngle);
+		const y3d = Math.sin(vertAngle);
+		const z3d = Math.sin(horizAngle) * Math.cos(vertAngle);
+		
+		const targetX = centerX + x3d * sphereRadius;
+		const targetY = centerY + y3d * sphereRadius * 0.6; 
+		
+		if (now >= startTime) {
+		const progress = Math.min((now - startTime) / flyDuration, 1);
+		orbStates[i].progress = progress < 0.5 
+			? 2 * progress * progress 
+			: 1 - Math.pow(-2 * progress + 2, 2) / 2;
+		}
 
-    const progress = orbStates[i].progress;
-    const currentX = centerX - 1000 + (targetX - (centerX - 1000)) * progress;
-    const currentY = centerY - 400 + (targetY - (centerY - 400)) * progress;
-    const depthScale = 0.7 + z3d * 0.3;
-    const size3D = size * depthScale;
-    
-    const pulse = 0.85 + Math.sin(now * 2 + timeOffset) * 0.15;
-    const depthAlpha = 0.5 + z3d * 0.5; 
-    const alpha = pulse * depthAlpha * progress;
-    
-    const spriteSpin = (now * 120 + i * 80) % 360;
+		const progress = orbStates[i].progress;
+		const currentX = centerX - 1000 + (targetX - (centerX - 1000)) * progress;
+		const currentY = centerY - 400 + (targetY - (centerY - 400)) * progress;
+		const depthScale = 0.7 + z3d * 0.3;
+		const size3D = size * depthScale;
+		
+		const pulse = 0.85 + Math.sin(now * 2 + timeOffset) * 0.15;
+		const depthAlpha = 0.5 + z3d * 0.5; 
+		const alpha = pulse * depthAlpha * progress;
+		
+		const spriteSpin = (now * 120 + i * 80) % 360;
   drawLog(30, canvas.height - 200);
 
     drawOrb(currentX, currentY, size3D, alpha, spriteSpin);
